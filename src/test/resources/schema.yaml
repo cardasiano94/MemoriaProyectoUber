@@ -42,6 +42,34 @@ databases:
     - name: "product_id"
       maxFreq: 2000
 
+- database: "test1"
+  dialect: "hive"
+  namespace: "public"
+  tables:
+  - table: "DataCDR"
+    columns:
+    - name: "numa"
+    - name: "fecha"
+    - name: "hora"
+    - name: "rinhead"
+    - name: "rintail"
+    - name: "dur"
+    - name: "tipo_ori"
+    - name: "cate_ori"
+    - name: "cate2_ori"
+
+  - table: "MediacionVoiceCDR"
+    columns:
+    - name: "fecha"
+    - name: "hora"
+    - name: "dur"
+    - name: "numa"
+    - name: "numb"
+    - name: "rin"
+    - name: "rinhead"
+    - name: "rintail"
+    - name: "tipo"
+
 - database: "test2"
   dialect: "hive"
   namespace: ""

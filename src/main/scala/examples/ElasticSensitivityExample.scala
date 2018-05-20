@@ -44,7 +44,7 @@ import com.uber.engsec.dp.util.ElasticSensitivity
 object ElasticSensitivityExample extends App {
   // Use the table schemas and metadata defined by the test classes
   System.setProperty("schema.config.path", "src/test/resources/schema.yaml")
-  val database = Schema.getDatabase("test")
+  val database = Schema.getDatabase("test1")
 
   // example query: How many US customers ordered product #1?
   val query = """
@@ -52,20 +52,29 @@ object ElasticSensitivityExample extends App {
     JOIN customers ON orders.customer_id = customers.customer_id
     WHERE orders.product_id = 1 AND customers.address LIKE '%United States%'
   """
+  val query2 = """
+    SELECT COUNT(*) FROM DataCDR
+    JOIN MediacionVoiceCDR ON DataCDR.numa = MediacionVoiceCDR.numa
+    WHERE MediacionVoiceCDR.numb = 1
+  """
+  val query3 = """
+    SELECT COUNT(numa) FROM DataCDR
+  """
 
   // query result when executed on the database
   val QUERY_RESULT = 100000
+  val QUERY_RESULT2 = 10000
 
   // privacy budget
   val EPSILON = 0.1
   // delta parameter: use 1/n^2, with n = 100000
   val DELTA = 1 / (math.pow(100000,2))
 
-  println(s"Query: $query")
-  println(s"Private result: $QUERY_RESULT\n")
+  println(s"Query: $query2")
+  println(s"Private result: $QUERY_RESULT2\n")
 
   (1 to 10).foreach { i =>
-    val noisyResult = ElasticSensitivity.addNoise(query, database, QUERY_RESULT, EPSILON, DELTA)
+    val noisyResult = ElasticSensitivity.addNoise(query3, database, QUERY_RESULT2, EPSILON, DELTA)
     println(s"Noisy result (run $i): %.0f".format(noisyResult))
   }
 }
