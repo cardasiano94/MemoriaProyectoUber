@@ -21,7 +21,9 @@
  */
 
 package examples
-
+// -----
+import java.sql.{Connection,DriverManager}
+// -----
 import com.uber.engsec.dp.schema.Schema
 import com.uber.engsec.dp.util.ElasticSensitivity
 
@@ -42,6 +44,30 @@ import com.uber.engsec.dp.util.ElasticSensitivity
   * therefore beyond the scope of this tool.
   */
 object ElasticSensitivityExample extends App {
+  //--------------------------------------------
+  // connect to the database named "mysql" on port 8889 of localhost
+  val url = "jdbc:mysql://localhost:3306/Memoria"
+  val driver = "com.mysql.jdbc.Driver"
+  val username = "root"
+  val password = "root1234"
+  var connection:Connection = _
+  var result = 0
+  try {
+    Class.forName(driver)
+    connection = DriverManager.getConnection(url, username, password)
+    val statement = connection.createStatement
+    val rs = statement.executeQuery("SELECT COUNT(tipo_string) FROM llamadas WHERE tipo_string=\"O\";")
+    while (rs.next) {
+      //val user = rs.getString("numa_string")
+      result = rs.getInt("COUNT(tipo_string)")
+      println("result = %s".format(result))
+    }
+  } catch {
+    case e: Exception => e.printStackTrace
+  }
+  connection.close
+  //--------------------------------------------
+
   // Use the table schemas and metadata defined by the test classes
   System.setProperty("schema.config.path", "src/test/resources/schema.yaml")
   val database = Schema.getDatabase("test1")
@@ -71,10 +97,10 @@ object ElasticSensitivityExample extends App {
   val DELTA = 1 / (math.pow(100000,2))
 
   println(s"Query: $query2")
-  println(s"Private result: $QUERY_RESULT2\n")
+  println(s"Private result: $result\n")
 
   (1 to 10).foreach { i =>
-    val noisyResult = ElasticSensitivity.addNoise(query3, database, QUERY_RESULT2, EPSILON, DELTA)
+    val noisyResult = ElasticSensitivity.addNoise(query3, database, result, EPSILON, DELTA)
     println(s"Noisy result (run $i): %.0f".format(noisyResult))
   }
 }
