@@ -52,9 +52,36 @@ object ElasticSensitivityExample extends App {
   val password = "root1234"
   var connection:Connection = _
   var result = 0
+  var z = Array("TABLE")
+  var q = ""
   try {
     Class.forName(driver)
     connection = DriverManager.getConnection(url, username, password)
+    //++++++++++++++++++++++++++++
+    var databaseMetaData = connection.getMetaData()
+    var resultSet = databaseMetaData.getTables(null,null,null,z)
+    System.out.println("Printing TABLE_TYPE \"TABLE\" ");
+    System.out.println("----------------------------------");
+    while(resultSet.next())
+    {
+      //Print
+      System.out.println(resultSet.getString("TABLE_NAME"));
+    }
+
+    var columns = databaseMetaData.getColumns(null,null,"llamadas",null)
+    while(columns.next())
+    {
+      var columnName = columns.getString("COLUMN_NAME");
+      var datatype = columns.getString("DATA_TYPE");
+      var columnsize = columns.getString("COLUMN_SIZE");
+      var decimaldigits = columns.getString("DECIMAL_DIGITS");
+      var isNullable = columns.getString("IS_NULLABLE");
+      var is_autoIncrment = columns.getString("IS_AUTOINCREMENT");
+      //Printing results
+      System.out.println(columnName + "---" + datatype + "---" + columnsize + "---" + decimaldigits + "---" + isNullable + "---" + is_autoIncrment);
+    }
+    //++++++++++++++++++++++++++++
+
     val statement = connection.createStatement
     val rs = statement.executeQuery("SELECT COUNT(tipo_string) FROM llamadas WHERE tipo_string=\"O\";")
     while (rs.next) {
