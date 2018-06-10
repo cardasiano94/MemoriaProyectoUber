@@ -23,6 +23,8 @@
 package examples
 // -----
 import java.sql.{Connection,DriverManager}
+import scala.io.Source
+import java.io._
 // -----
 import com.uber.engsec.dp.schema.Schema
 import com.uber.engsec.dp.util.ElasticSensitivity
@@ -54,6 +56,8 @@ object ElasticSensitivityExample extends App {
   var result = 0
   var z = Array("TABLE")
   var q = ""
+  var tableName = ""
+  var definitiveQuery = ""
   try {
     Class.forName(driver)
     connection = DriverManager.getConnection(url, username, password)
@@ -65,13 +69,19 @@ object ElasticSensitivityExample extends App {
     while(resultSet.next())
     {
       //Print
-      System.out.println(resultSet.getString("TABLE_NAME"));
+      tableName = resultSet.getString("TABLE_NAME")
+      System.out.println(tableName);
     }
+    //testing
+    val pw = new PrintWriter(new File("schemazo.yaml" ))
+    pw.write("---\n" + "databases:\n"+"- database: \"test\"\n" + "  dialect: \"hive\"\n" + "  namespace: \"public\"\n" + "  tables:\n" + "  - table: \"" + tableName + "\"\n" + "    columns:\n")
+    //endTesting
 
-    var columns = databaseMetaData.getColumns(null,null,"llamadas",null)
+    var  columns = databaseMetaData.getColumns(null,null,"llamadas",null)
     while(columns.next())
     {
       var columnName = columns.getString("COLUMN_NAME");
+      pw.write("    - name: \"" + columnName + "\"\n")
       var datatype = columns.getString("DATA_TYPE");
       var columnsize = columns.getString("COLUMN_SIZE");
       var decimaldigits = columns.getString("DECIMAL_DIGITS");
@@ -81,23 +91,28 @@ object ElasticSensitivityExample extends App {
       System.out.println(columnName + "---" + datatype + "---" + columnsize + "---" + decimaldigits + "---" + isNullable + "---" + is_autoIncrment);
     }
     //++++++++++++++++++++++++++++
-
+    pw.close
     val statement = connection.createStatement
-    val rs = statement.executeQuery("SELECT COUNT(tipo_string) FROM llamadas WHERE tipo_string=\"O\";")
+    definitiveQuery =
+      """
+        SELECT COUNT(tipo) FROM llamadas
+      """
+    val rs = statement.executeQuery(definitiveQuery)
     while (rs.next) {
       //val user = rs.getString("numa_string")
-      result = rs.getInt("COUNT(tipo_string)")
+      result = rs.getInt("COUNT(tipo)")
       println("result = %s".format(result))
     }
   } catch {
     case e: Exception => e.printStackTrace
   }
   connection.close
+
   //--------------------------------------------
 
   // Use the table schemas and metadata defined by the test classes
-  System.setProperty("schema.config.path", "src/test/resources/schema.yaml")
-  val database = Schema.getDatabase("test1")
+  System.setProperty("schema.config.path", "schemazo.yaml")
+  val database = Schema.getDatabase("test")
 
   // example query: How many US customers ordered product #1?
   val query = """
@@ -111,7 +126,7 @@ object ElasticSensitivityExample extends App {
     WHERE MediacionVoiceCDR.numb = 1
   """
   val query3 = """
-    SELECT COUNT(numa) FROM DataCDR
+    SELECT COUNT(tipo) FROM llamadas WHERE llamadas.tipo = O
   """
 
   // query result when executed on the database
@@ -127,7 +142,7 @@ object ElasticSensitivityExample extends App {
   println(s"Private result: $result\n")
 
   (1 to 10).foreach { i =>
-    val noisyResult = ElasticSensitivity.addNoise(query3, database, result, EPSILON, DELTA)
+    val noisyResult = ElasticSensitivity.addNoise(definitiveQuery, database, result, EPSILON, DELTA)
     println(s"Noisy result (run $i): %.0f".format(noisyResult))
   }
 }

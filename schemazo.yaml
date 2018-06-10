@@ -1,0 +1,17 @@
+---
+databases:
+- database: "test"
+  dialect: "hive"
+  namespace: "public"
+  tables:
+  - table: "llamadas"
+    columns:
+    - name: "dur"
+    - name: "fecha"
+    - name: "hora"
+    - name: "numa"
+    - name: "numb"
+    - name: "rin"
+    - name: "rinhead"
+    - name: "rintail"
+    - name: "tipo"
