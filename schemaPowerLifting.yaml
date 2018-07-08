@@ -1,0 +1,37 @@
+---
+databases:
+- database: "test"
+  dialect: "hive"
+  namespace: "public"
+  tables:
+  - table: "openpowerlifting"
+    columns:
+    - name: "MeetID"
+      maxFreq: 1069
+    - name: "Name"
+    - name: "Sex"
+    - name: "Equipment"
+    - name: "Age"
+    - name: "Division"
+    - name: "BodyweightKg"
+    - name: "WeightClassKg"
+    - name: "Squat4Kg"
+    - name: "BestSquatKg"
+    - name: "Bench4Kg"
+    - name: "BestBenchKg"
+    - name: "Deadlift4Kg"
+    - name: "BestDeadliftKg"
+    - name: "TotalKg"
+    - name: "Place"
+    - name: "Wilks"
+  - table: "meets"
+    columns:
+    - name: "MeetID"
+      maxFreq: 1
+    - name: "MeetPath"
+    - name: "Federation"
+    - name: "Date"
+    - name: "MeetCountry"
+    - name: "MeetState"
+    - name: "MeetTown"
+    - name: "MeetName"

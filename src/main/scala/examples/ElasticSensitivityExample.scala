@@ -48,16 +48,35 @@ import com.uber.engsec.dp.util.ElasticSensitivity
 object ElasticSensitivityExample extends App {
   //--------------------------------------------
   // connect to the database named "mysql" on port 8889 of localhost
-  val url = "jdbc:mysql://localhost:3306/Memoria"
+  val url = "jdbc:mysql://localhost:3306/fifa"
   val driver = "com.mysql.jdbc.Driver"
   val username = "root"
   val password = "root1234"
   var connection:Connection = _
-  var result = 0
+  var result = 0.0
   var z = Array("TABLE")
   var q = ""
-  var tableName = ""
-  var definitiveQuery = ""
+  val definitiveQuery2 =
+    """
+        SELECT sum(MONTO_INSTITUCION) FROM ONGs
+        JOIN Donaciones ON ONGs.idONG = Donaciones.idONG
+        WHERE ONGs.idONG= 'miparque'
+    """
+  //SELECT count(DISTINCT ONGs.idONG) FROM ONGs JOIN Donaciones ON ONGs.idONG = Donaciones.idONG WHERE Categoria LIKE 'SALUD' and MONTO_TOTAL_DONACION >4000000
+  //SELECT count(*) FROM heroes_information JOIN super_hero_powers ON heroes_information.name = super_hero_powers.hero_names WHERE Publisher LIKE 'Marvel Comics' and Agility='False'
+  //SELECT count(*) FROM meets JOIN openpowerlifting ON meets.MeetID = openpowerlifting.MeetID WHERE Age > 30 AND MeetCountry LIKE 'USA'
+  val definitiveQuery =
+    """
+      SELECT count(distinct ppd.ID)
+      FROM playerpersonaldata AS ppd
+             JOIN playerattributedata AS pad ON ppd.ID = pad.ID
+             JOIN playerplayingpositiondata AS pppd ON ppd.ID = pppd.ID
+       WHERE ppd.Age < 30 AND
+      			   pad.Strength > 65 AND pppd.RAM > 70
+
+    """
+
+  var tableNames: List[String] = List()
   try {
     Class.forName(driver)
     connection = DriverManager.getConnection(url, username, password)
@@ -69,38 +88,37 @@ object ElasticSensitivityExample extends App {
     while(resultSet.next())
     {
       //Print
-      tableName = resultSet.getString("TABLE_NAME")
-      System.out.println(tableName);
+      tableNames = resultSet.getString("TABLE_NAME") :: tableNames
+      //System.out.println(tableName);
     }
     //testing
     val pw = new PrintWriter(new File("schemazo.yaml" ))
-    pw.write("---\n" + "databases:\n"+"- database: \"test\"\n" + "  dialect: \"hive\"\n" + "  namespace: \"public\"\n" + "  tables:\n" + "  - table: \"" + tableName + "\"\n" + "    columns:\n")
+    pw.write("---\n" + "databases:\n"+"- database: \"test\"\n" + "  dialect: \"hive\"\n" + "  namespace: \"public\"\n" + "  tables:\n")
     //endTesting
-
-    var  columns = databaseMetaData.getColumns(null,null,"llamadas",null)
-    while(columns.next())
-    {
-      var columnName = columns.getString("COLUMN_NAME");
-      pw.write("    - name: \"" + columnName + "\"\n")
-      var datatype = columns.getString("DATA_TYPE");
-      var columnsize = columns.getString("COLUMN_SIZE");
-      var decimaldigits = columns.getString("DECIMAL_DIGITS");
-      var isNullable = columns.getString("IS_NULLABLE");
-      var is_autoIncrment = columns.getString("IS_AUTOINCREMENT");
-      //Printing results
-      System.out.println(columnName + "---" + datatype + "---" + columnsize + "---" + decimaldigits + "---" + isNullable + "---" + is_autoIncrment);
+    for(tableName <- tableNames){
+      pw.write("  - table: \"" +tableName + "\"\n" + "    columns:\n")
+      var  columns = databaseMetaData.getColumns(null,null,tableName,null)
+      while(columns.next())
+      {
+        var columnName = columns.getString("COLUMN_NAME");
+        pw.write("    - name: \"" + columnName + "\"\n")
+        var datatype = columns.getString("DATA_TYPE");
+        var columnsize = columns.getString("COLUMN_SIZE");
+        var decimaldigits = columns.getString("DECIMAL_DIGITS");
+        var isNullable = columns.getString("IS_NULLABLE");
+        var is_autoIncrment = columns.getString("IS_AUTOINCREMENT");
+        //Printing results
+        System.out.println(columnName + "---" + datatype + "---" + columnsize + "---" + decimaldigits + "---" + isNullable + "---" + is_autoIncrment);
+      }
     }
     //++++++++++++++++++++++++++++
     pw.close
     val statement = connection.createStatement
-    definitiveQuery =
-      """
-        SELECT COUNT(tipo) FROM llamadas
-      """
+
     val rs = statement.executeQuery(definitiveQuery)
     while (rs.next) {
       //val user = rs.getString("numa_string")
-      result = rs.getInt("COUNT(tipo)")
+      result = rs.getDouble(1)
       println("result = %s".format(result))
     }
   } catch {
@@ -111,7 +129,8 @@ object ElasticSensitivityExample extends App {
   //--------------------------------------------
 
   // Use the table schemas and metadata defined by the test classes
-  System.setProperty("schema.config.path", "schemazo.yaml")
+  //System.setProperty("schema.config.path", "src/test/resources/schema.yaml")
+  System.setProperty("schema.config.path", "schemaa.yaml")
   val database = Schema.getDatabase("test")
 
   // example query: How many US customers ordered product #1?
@@ -138,7 +157,7 @@ object ElasticSensitivityExample extends App {
   // delta parameter: use 1/n^2, with n = 100000
   val DELTA = 1 / (math.pow(100000,2))
 
-  println(s"Query: $query2")
+  println(s"Query: $definitiveQuery")
   println(s"Private result: $result\n")
 
   (1 to 10).foreach { i =>

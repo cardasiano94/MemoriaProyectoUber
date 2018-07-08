@@ -13,6 +13,7 @@ databases:
     - name: "CF"
     - name: "CM"
     - name: "ID"
+      maxFreq: 2
     - name: "LAM"
     - name: "LB"
     - name: "LCB"
@@ -39,6 +40,7 @@ databases:
     columns:
     - name: "idpos"
     - name: "ID"
+      maxFreq: 2
     - name: "Name"
     - name: "Age"
     - name: "Photo"
@@ -72,6 +74,7 @@ databases:
     - name: "GK_reflexes"
     - name: "Heading_accuracy"
     - name: "ID"
+      maxFreq: 2
     - name: "Interceptions"
     - name: "Jumping"
     - name: "Long_passing"
