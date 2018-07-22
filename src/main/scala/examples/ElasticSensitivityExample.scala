@@ -29,6 +29,9 @@ import java.io._
 import com.uber.engsec.dp.schema.Schema
 import com.uber.engsec.dp.util.ElasticSensitivity
 
+import org.apache.jena.query._
+
+
 /** A simple differential privacy example using elastic sensitivity.
   *
   * This example code supports queries that return a single column and single row. The code can be extended to support
@@ -46,6 +49,24 @@ import com.uber.engsec.dp.util.ElasticSensitivity
   * therefore beyond the scope of this tool.
   */
 object ElasticSensitivityExample extends App {
+  val model =  "vc-db-1.rdf"
+  val dataset = DatasetFactory.create(model)
+  val queryString = "SELECT ?x\nWHERE { ?x  <http://www.w3.org/2001/vcard-rdf/3.0#FN>  \"John Smith\" }"
+  val queryRDF = QueryFactory.create(queryString)
+
+  try{
+    val qexec = QueryExecutionFactory.create(queryRDF, dataset)
+    val results = qexec.execSelect()
+    while(results.hasNext()){
+      val soln = results.nextSolution()
+      val x = soln.get("x") ;       // Get a result variable by name.
+      //val r = soln.getResource("x") ; // Get a result variable - must be a resource
+      //val l = soln.getLiteral("x") ;   // Get a result variable - must be a literal
+      System.out.println(x);
+    }
+  }catch {
+    case e: Exception => e.printStackTrace
+  }
   //--------------------------------------------
   // connect to the database named "mysql" on port 8889 of localhost
   val url = "jdbc:mysql://localhost:3306/fifa"
