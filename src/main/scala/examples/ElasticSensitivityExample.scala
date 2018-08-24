@@ -48,7 +48,10 @@ import org.apache.jena.query._
   * depleted to run each query. A privacy budget strategy depends on the problem domain and threat model and is
   * therefore beyond the scope of this tool.
   */
+
+
 object ElasticSensitivityExample extends App {
+  /**
   val model =  "vc-db-1.rdf"
   val dataset = DatasetFactory.create(model)
   val queryString = "SELECT ?x\nWHERE { ?x  <http://www.w3.org/2001/vcard-rdf/3.0#FN>  \"John Smith\" }"
@@ -66,10 +69,11 @@ object ElasticSensitivityExample extends App {
     }
   }catch {
     case e: Exception => e.printStackTrace
-  }
+  }*/
+
   //--------------------------------------------
   // connect to the database named "mysql" on port 8889 of localhost
-  val url = "jdbc:mysql://localhost:3306/fifa"
+  val url = "jdbc:mysql://localhost:3306/TPC-H"
   val driver = "com.mysql.jdbc.Driver"
   val username = "root"
   val password = "root1234"
@@ -77,24 +81,48 @@ object ElasticSensitivityExample extends App {
   var result = 0.0
   var z = Array("TABLE")
   var q = ""
-  val definitiveQuery2 =
-    """
-        SELECT sum(MONTO_INSTITUCION) FROM ONGs
-        JOIN Donaciones ON ONGs.idONG = Donaciones.idONG
-        WHERE ONGs.idONG= 'miparque'
-    """
   //SELECT count(DISTINCT ONGs.idONG) FROM ONGs JOIN Donaciones ON ONGs.idONG = Donaciones.idONG WHERE Categoria LIKE 'SALUD' and MONTO_TOTAL_DONACION >4000000
   //SELECT count(*) FROM heroes_information JOIN super_hero_powers ON heroes_information.name = super_hero_powers.hero_names WHERE Publisher LIKE 'Marvel Comics' and Agility='False'
-  //SELECT count(*) FROM meets JOIN openpowerlifting ON meets.MeetID = openpowerlifting.MeetID WHERE Age > 30 AND MeetCountry LIKE 'USA'
+  //SELECT count(distinct openpowerlifting.Name) FROM meets JOIN openpowerlifting ON meets.MeetID = openpowerlifting.MeetID WHERE Age > 30 AND MeetCountry LIKE 'USA' AND Wilks > 120
+
+  /**
+  SELECT count(distinct pop.ID)
+             FROM playerOnlyPersonal AS pop
+                    JOIN playerattributedata AS pad ON pop.ID = pad.ID
+                    JOIN playerplayingpositiondata1 AS pppd1 ON pop.ID = pppd1.ID
+                    JOIN playerplayingpositiondata2 AS pppd2 ON pop.ID = pppd2.ID
+                    JOIN playerdataMoney AS pdm ON pop.ID = pdm.ID
+              WHERE pop.Age < 30 AND
+             			   pad.Strength > 65
+
+  SELECT count(distinct info1.name)
+	FROM info1
+		JOIN info2 ON info1.name = info2.name
+        JOIN powers1 ON info1.name = powers1.hero_names
+        JOIN powers2 ON info1.name = powers2.hero_names
+	WHERE Publisher LIKE 'Marvel Comics'
+
+
+  SELECT count(distinct orders.ORDERKEY)
+	FROM orders
+		JOIN customer ON orders.CUSTKEY = customer.CUSTKEY
+    JOIN lineitem ON orders.ORDERKEY = lineitem.ORDERKEY
+    JOIN partsupp ON lineitem.PARTKEY = partsupp.PARTKEY
+    JOIN supplier ON supplier.SUPPKEY = partsupp.SUPPKEY
+
+
+    */
+
+
+
   val definitiveQuery =
     """
-      SELECT count(distinct ppd.ID)
-      FROM playerpersonaldata AS ppd
-             JOIN playerattributedata AS pad ON ppd.ID = pad.ID
-             JOIN playerplayingpositiondata AS pppd ON ppd.ID = pppd.ID
-       WHERE ppd.Age < 30 AND
-      			   pad.Strength > 65 AND pppd.RAM > 70
-
+      SELECT count(distinct orders.ORDERKEY)
+      	FROM orders
+      		JOIN customer ON orders.CUSTKEY = customer.CUSTKEY
+          JOIN lineitem ON orders.ORDERKEY = lineitem.ORDERKEY
+          JOIN partsupp ON lineitem.PARTKEY = partsupp.PARTKEY
+          JOIN supplier ON supplier.SUPPKEY = partsupp.SUPPKEY
     """
 
   var tableNames: List[String] = List()
@@ -153,21 +181,7 @@ object ElasticSensitivityExample extends App {
   //System.setProperty("schema.config.path", "src/test/resources/schema.yaml")
   System.setProperty("schema.config.path", "schemaa.yaml")
   val database = Schema.getDatabase("test")
-
-  // example query: How many US customers ordered product #1?
-  val query = """
-    SELECT COUNT(*) FROM orders
-    JOIN customers ON orders.customer_id = customers.customer_id
-    WHERE orders.product_id = 1 AND customers.address LIKE '%United States%'
-  """
-  val query2 = """
-    SELECT COUNT(*) FROM DataCDR
-    JOIN MediacionVoiceCDR ON DataCDR.numa = MediacionVoiceCDR.numa
-    WHERE MediacionVoiceCDR.numb = 1
-  """
-  val query3 = """
-    SELECT COUNT(tipo) FROM llamadas WHERE llamadas.tipo = O
-  """
+  
 
   // query result when executed on the database
   val QUERY_RESULT = 100000

@@ -4,6 +4,41 @@ databases:
   dialect: "hive"
   namespace: "public"
   tables:
+  - table: "playerplayingpositiondata2"
+    columns:
+    - name: "CAM"
+    - name: "CB"
+    - name: "CDM"
+    - name: "CF"
+    - name: "CM"
+    - name: "ID"
+      maxFreq: 2
+    - name: "LAM"
+    - name: "LB"
+    - name: "LCB"
+    - name: "LCM"
+    - name: "LDM"
+    - name: "LF"
+    - name: "LM"
+    - name: "LS1"
+    - name: "LW"
+    - name: "LWB"
+  - table: "playerplayingpositiondata1"
+    columns:
+    - name: "ID"
+      maxFreq: 2
+    - name: "Preferred_Positions"
+    - name: "RAM"
+    - name: "RB"
+    - name: "RCB"
+    - name: "RCM"
+    - name: "RDM"
+    - name: "RF"
+    - name: "RM1"
+    - name: "RS"
+    - name: "RW"
+    - name: "RWB"
+    - name: "ST"
   - table: "playerplayingpositiondata"
     columns:
     - name: "idCol"
@@ -53,6 +88,16 @@ databases:
     - name: "Value"
     - name: "Wage"
     - name: "Special"
+  - table: "playerdataMoney"
+    columns:
+    - name: "idpos"
+    - name: "ID"
+      maxFreq: 2
+    - name: "Overall"
+    - name: "Potential"
+    - name: "Value"
+    - name: "Wage"
+    - name: "Special"
   - table: "playerattributedata"
     columns:
     - name: "idCol"
@@ -92,3 +137,14 @@ databases:
     - name: "Strength"
     - name: "Vision"
     - name: "Volleys"
+  - table: "playerOnlyPersonal"
+    columns:
+    - name: "ID"
+      maxFreq: 2
+    - name: "Name"
+    - name: "Age"
+    - name: "Photo"
+    - name: "Nationality"
+    - name: "Flag"
+    - name: "Club"
+    - name: "Club_Logo"
